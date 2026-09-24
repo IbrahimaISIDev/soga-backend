@@ -59,16 +59,20 @@ model Article {
 }
 
 model Evenement {
-  id          String   @id @default(cuid())
-  titre       String
-  slug        String   @unique
-  description String?
-  date        DateTime
-  lieu        String?
-  image       String?
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  titre              String
+  slug               String   @unique
+  description        String?
+  date               DateTime
+  heure              String?
+  lieu               String?
+  type               String?
+  inscriptionOuverte Boolean  @default(true)
+  placesLimitees     Boolean  @default(false)
+  image              String?
+  published          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@index([slug])
   @@index([published])
@@ -78,6 +82,7 @@ model Evenement {
 model Partenaire {
   id          String   @id @default(cuid())
   nom         String
+  categorie   String?
   logo        String?
   description String?
   siteWeb     String?
@@ -92,6 +97,7 @@ model Temoignage {
   id          String   @id @default(cuid())
   nom         String
   role        String?
+  promotion   String?
   contenu     String
   image       String?
   published   Boolean  @default(false)
@@ -105,8 +111,12 @@ model Equipe {
   id          String   @id @default(cuid())
   nom         String
   prenom      String
+  slug        String?  @unique
   role        String?
+  direction   String?
+  specialite  String?
   bio         String?
+  filieres    String[] @default([])
   email       String?
   image       String?
   linkedin    String?
@@ -121,6 +131,8 @@ model Expert {
   id          String   @id @default(cuid())
   nom         String
   prenom      String
+  titre       String?
+  institution String?
   specialite  String?
   bio         String?
   image       String?
@@ -132,15 +144,20 @@ model Expert {
 }
 
 model Publication {
-  id          String   @id @default(cuid())
-  titre       String
-  slug        String   @unique
-  description String?
-  fichier     String?
-  date        DateTime @default(now())
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  titre          String
+  slug           String   @unique
+  type           String?
+  auteurs        String[] @default([])
+  thematique     String?
+  description    String?
+  image          String?
+  fichier        String?
+  telechargeable Boolean  @default(false)
+  date           DateTime @default(now())
+  published      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([slug])
   @@index([published])

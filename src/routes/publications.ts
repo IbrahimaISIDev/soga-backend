@@ -8,8 +8,13 @@ const router = Router();
 const publicationSchema = z.object({
   titre: z.string().min(1).max(200),
   slug: z.string().min(1).max(200).regex(/^[a-z0-9-]+$/),
+  type: z.string().optional(),
+  auteurs: z.array(z.string()).optional(),
+  thematique: z.string().optional(),
   description: z.string().optional(),
+  image: z.string().optional(),
   fichier: z.string().optional(),
+  telechargeable: z.boolean().optional(),
   date: z.string().optional(),
   published: z.boolean().optional()
 });

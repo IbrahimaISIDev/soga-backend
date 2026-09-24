@@ -10,7 +10,11 @@ const evenementSchema = z.object({
   slug: z.string().min(1).max(200).regex(/^[a-z0-9-]+$/),
   description: z.string().optional(),
   date: z.string(),
+  heure: z.string().optional(),
   lieu: z.string().optional(),
+  type: z.string().optional(),
+  inscriptionOuverte: z.boolean().optional(),
+  placesLimitees: z.boolean().optional(),
   image: z.string().optional(),
   published: z.boolean().optional()
 });

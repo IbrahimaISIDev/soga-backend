@@ -8,6 +8,8 @@ const router = Router();
 const expertSchema = z.object({
   nom: z.string().min(1).max(200),
   prenom: z.string().optional(),
+  titre: z.string().optional(),
+  institution: z.string().optional(),
   specialite: z.string().optional(),
   bio: z.string().optional(),
   image: z.string().optional(),

@@ -8,8 +8,12 @@ const router = Router();
 const equipeSchema = z.object({
   nom: z.string().min(1).max(200),
   prenom: z.string().optional(),
+  slug: z.string().max(200).regex(/^[a-z0-9-]*$/).optional(),
   role: z.string().optional(),
+  direction: z.string().optional(),
+  specialite: z.string().optional(),
   bio: z.string().optional(),
+  filieres: z.array(z.string()).optional(),
   email: z.string().optional(),
   image: z.string().optional(),
   linkedin: z.string().optional(),
@@ -45,7 +49,11 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     const data = equipeSchema.parse(req.body);
-    const membre = await prisma.equipe.create({ data: { ...data, prenom: data.prenom ?? '' } });
+    // Empty string would collide under the unique constraint across every
+    // member without a real slug yet — store as null instead, like an unset value.
+    const membre = await prisma.equipe.create({
+      data: { ...data, prenom: data.prenom ?? '', slug: data.slug || null }
+    });
     res.status(201).json({ success: true, data: membre });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ success: false, error: 'Validation error', details: error.issues });
@@ -57,7 +65,10 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
 router.put('/:id', authMiddleware, async (req: Request, res: Response) => {
   try {
     const data = equipeSchema.partial().parse(req.body);
-    const membre = await prisma.equipe.update({ where: { id: req.params.id }, data });
+    const membre = await prisma.equipe.update({
+      where: { id: req.params.id },
+      data: { ...data, slug: data.slug === '' ? null : data.slug }
+    });
     res.json({ success: true, data: membre });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ success: false, error: 'Validation error', details: error.issues });

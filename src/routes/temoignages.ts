@@ -8,6 +8,7 @@ const router = Router();
 const temoignageSchema = z.object({
   nom: z.string().min(1).max(200),
   role: z.string().optional(),
+  promotion: z.string().optional(),
   contenu: z.string(),
   image: z.string().optional(),
   published: z.boolean().optional()

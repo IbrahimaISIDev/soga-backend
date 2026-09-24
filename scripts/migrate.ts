@@ -124,7 +124,11 @@ async function migrateEvenements() {
         slug: data.slug,
         description: data.description || '',
         date: data.date ? new Date(data.date) : new Date(),
+        heure: data.heure || '',
         lieu: data.lieu || '',
+        type: data.type || '',
+        inscriptionOuverte: data.inscriptionOuverte ?? true,
+        placesLimitees: data.placesLimitees || false,
         image: data.image || '',
         published: data.published ?? true
       };
@@ -164,6 +168,7 @@ async function migratePartenaires() {
 
       const fields = {
         nom: data.nom,
+        categorie: data.categorie || '',
         logo: data.logo || '',
         description: data.description || '',
         published: true
@@ -206,6 +211,7 @@ async function migrateTemoignages() {
       const fields = {
         nom: data.auteur || '',
         role: data.titre || '',
+        promotion: data.promotion || '',
         contenu: data.texte || '',
         image: data.photo || '',
         published: true
@@ -249,8 +255,12 @@ async function migrateEquipe() {
       const fields = {
         nom: data.nom || '',
         prenom: '',
+        slug: data.slug || null,
         role: data.titre || '',
+        direction: data.direction || '',
+        specialite: data.specialite || '',
         bio: data.biographie || '',
+        filieres: data.filieres || [],
         email: '',
         image: data.portrait || '',
         linkedin: '',
@@ -296,6 +306,8 @@ async function migrateExperts() {
       const fields = {
         nom: data.nom || '',
         prenom: '',
+        titre: data.titre || '',
+        institution: data.institution || '',
         specialite: data.specialite || '',
         bio: '',
         image: data.portrait || '',
@@ -338,8 +350,13 @@ async function migratePublications() {
       const fields = {
         titre: data.titre,
         slug: data.slug,
-        description: data.description || '',
+        type: data.type || '',
+        auteurs: data.auteurs || [],
+        thematique: data.thematique || '',
+        description: data.resume || data.description || '',
+        image: data.image || '',
         fichier: data.fichier || '',
+        telechargeable: data.telechargeable ?? false,
         date: data.date ? new Date(data.date) : new Date(),
         published: data.published ?? true
       };
