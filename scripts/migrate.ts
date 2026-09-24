@@ -64,8 +64,8 @@ async function migrateFormations() {
 
 async function migrateArticles() {
   console.log('📰 Migrating Articles...');
-  const articlesDir = path.join(__dirname, '../../content/articles');
-  
+  const articlesDir = path.join(CONTENT_DIR, 'articles');
+
   if (!fs.existsSync(articlesDir)) {
     console.log('  ⚠️  Articles directory not found, skipping...');
     return;
@@ -77,19 +77,21 @@ async function migrateArticles() {
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(articlesDir, file), 'utf-8'));
-      
+
+      const fields = {
+        titre: data.titre,
+        slug: data.slug,
+        resume: data.extrait || '',
+        contenu: Array.isArray(data.contenu) ? data.contenu.join('\n\n') : data.contenu || '',
+        image: data.image || '',
+        date: data.date ? new Date(data.date) : new Date(),
+        published: true
+      };
+
       await prisma.article.upsert({
         where: { slug: data.slug },
-        update: {},
-        create: {
-          titre: data.titre,
-          slug: data.slug,
-          resume: data.extrait || '',
-          contenu: Array.isArray(data.contenu) ? data.contenu.join('\n\n') : data.contenu || '',
-          image: data.image || '',
-          date: data.date ? new Date(data.date) : new Date(),
-          published: true
-        }
+        update: fields,
+        create: fields
       });
       count++;
     } catch (error) {
@@ -102,8 +104,8 @@ async function migrateArticles() {
 
 async function migrateEvenements() {
   console.log('📅 Migrating Evenements...');
-  const evenementsDir = path.join(__dirname, '../../content/evenements');
-  
+  const evenementsDir = path.join(CONTENT_DIR, 'evenements');
+
   if (!fs.existsSync(evenementsDir)) {
     console.log('  ⚠️  Evenements directory not found, skipping...');
     return;
@@ -115,17 +117,21 @@ async function migrateEvenements() {
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(evenementsDir, file), 'utf-8'));
-      
-      await prisma.evenement.create({
-        data: {
-          titre: data.titre,
-          slug: data.slug,
-          description: data.description,
-          date: data.date ? new Date(data.date) : new Date(),
-          lieu: data.lieu,
-          image: data.image,
-          published: data.published || false
-        }
+
+      const fields = {
+        titre: data.titre,
+        slug: data.slug,
+        description: data.description || '',
+        date: data.date ? new Date(data.date) : new Date(),
+        lieu: data.lieu || '',
+        image: data.image || '',
+        published: data.published ?? true
+      };
+
+      await prisma.evenement.upsert({
+        where: { slug: data.slug },
+        update: fields,
+        create: fields
       });
       count++;
     } catch (error) {
@@ -138,8 +144,8 @@ async function migrateEvenements() {
 
 async function migratePartenaires() {
   console.log('🤝 Migrating Partenaires...');
-  const partenairesDir = path.join(__dirname, '../../content/partenaires');
-  
+  const partenairesDir = path.join(CONTENT_DIR, 'partenaires');
+
   if (!fs.existsSync(partenairesDir)) {
     console.log('  ⚠️  Partenaires directory not found, skipping...');
     return;
@@ -148,19 +154,26 @@ async function migratePartenaires() {
   const files = fs.readdirSync(partenairesDir);
   let count = 0;
 
+  // Partenaire has no unique slug column — matched by nom instead, which is
+  // unique across the real content (unlike several other collections here,
+  // whose provisional entries currently share "Contenu provisoire" as nom).
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(partenairesDir, file), 'utf-8'));
-      
-      await prisma.partenaire.create({
-        data: {
-          nom: data.nom,
-          slug: data.itemId,
-          logo: data.logo || '',
-          description: data.description || '',
-          published: true
-        }
-      }).catch(() => {});
+
+      const fields = {
+        nom: data.nom,
+        logo: data.logo || '',
+        description: data.description || '',
+        published: true
+      };
+
+      const existing = await prisma.partenaire.findFirst({ where: { nom: data.nom } });
+      if (existing) {
+        await prisma.partenaire.update({ where: { id: existing.id }, data: fields });
+      } else {
+        await prisma.partenaire.create({ data: fields });
+      }
       count++;
     } catch (error) {
       console.error(`  ❌ Error migrating ${file}:`, error);
@@ -172,8 +185,8 @@ async function migratePartenaires() {
 
 async function migrateTemoignages() {
   console.log('💬 Migrating Temoignages...');
-  const temoignagesDir = path.join(__dirname, '../../content/temoignages');
-  
+  const temoignagesDir = path.join(CONTENT_DIR, 'temoignages');
+
   if (!fs.existsSync(temoignagesDir)) {
     console.log('  ⚠️  Temoignages directory not found, skipping...');
     return;
@@ -182,20 +195,27 @@ async function migrateTemoignages() {
   const files = fs.readdirSync(temoignagesDir);
   let count = 0;
 
+  // Temoignage has no unique slug column, and several entries currently
+  // share "Contenu provisoire" as auteur — matched by role (the JSON's
+  // "titre", e.g. "Ingénieur de production") instead, which is unique.
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(temoignagesDir, file), 'utf-8'));
-      
-      await prisma.temoignage.create({
-        data: {
-          nom: data.auteur || '',
-          slug: data.itemId,
-          role: data.titre || '',
-          contenu: data.texte || '',
-          image: data.photo || '',
-          published: true
-        }
-      }).catch(() => {});
+
+      const fields = {
+        nom: data.auteur || '',
+        role: data.titre || '',
+        contenu: data.texte || '',
+        image: data.photo || '',
+        published: true
+      };
+
+      const existing = await prisma.temoignage.findFirst({ where: { role: data.titre } });
+      if (existing) {
+        await prisma.temoignage.update({ where: { id: existing.id }, data: fields });
+      } else {
+        await prisma.temoignage.create({ data: fields });
+      }
       count++;
     } catch (error) {
       console.error(`  ❌ Error migrating ${file}:`, error);
@@ -207,8 +227,8 @@ async function migrateTemoignages() {
 
 async function migrateEquipe() {
   console.log('👥 Migrating Equipe...');
-  const equipeDir = path.join(__dirname, '../../content/equipe');
-  
+  const equipeDir = path.join(CONTENT_DIR, 'equipe');
+
   if (!fs.existsSync(equipeDir)) {
     console.log('  ⚠️  Equipe directory not found, skipping...');
     return;
@@ -217,23 +237,31 @@ async function migrateEquipe() {
   const files = fs.readdirSync(equipeDir);
   let count = 0;
 
+  // Equipe has no unique slug column, and every current entry shares
+  // "Contenu provisoire" as nom (names not yet confirmed) — matched by
+  // role (the JSON's "titre", e.g. "Directeur Académique") instead, which
+  // is unique. No source field exists yet for prenom/email/linkedin.
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(equipeDir, file), 'utf-8'));
-      
-      await prisma.equipe.create({
-        data: {
-          nom: data.nom || '',
-          prenom: '',
-          slug: data.slug,
-          role: data.titre || '',
-          bio: data.biographie || '',
-          email: '',
-          image: data.portrait || '',
-          linkedin: '',
-          published: true
-        }
-      }).catch(() => {});
+
+      const fields = {
+        nom: data.nom || '',
+        prenom: '',
+        role: data.titre || '',
+        bio: data.biographie || '',
+        email: '',
+        image: data.portrait || '',
+        linkedin: '',
+        published: true
+      };
+
+      const existing = await prisma.equipe.findFirst({ where: { role: data.titre } });
+      if (existing) {
+        await prisma.equipe.update({ where: { id: existing.id }, data: fields });
+      } else {
+        await prisma.equipe.create({ data: fields });
+      }
       count++;
     } catch (error) {
       console.error(`  ❌ Error migrating ${file}:`, error);
@@ -245,8 +273,8 @@ async function migrateEquipe() {
 
 async function migrateExperts() {
   console.log('🎓 Migrating Experts...');
-  const expertsDir = path.join(__dirname, '../../content/experts');
-  
+  const expertsDir = path.join(CONTENT_DIR, 'experts');
+
   if (!fs.existsSync(expertsDir)) {
     console.log('  ⚠️  Experts directory not found, skipping...');
     return;
@@ -255,21 +283,32 @@ async function migrateExperts() {
   const files = fs.readdirSync(expertsDir);
   let count = 0;
 
+  // Expert has no unique slug column, and most current entries share
+  // "Contenu provisoire" as nom — matched by (nom, specialite) instead,
+  // which is unique. The source content has no biography field, so bio is
+  // left empty rather than (as the previous version of this script did)
+  // filling it with the expert's institution, which isn't a biography.
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(expertsDir, file), 'utf-8'));
-      
-      await prisma.expert.create({
-        data: {
-          nom: data.nom || '',
-          prenom: '',
-          slug: data.itemId,
-          specialite: data.specialite || '',
-          bio: data.institution || '',
-          image: data.portrait || '',
-          published: true
-        }
-      }).catch(() => {});
+
+      const fields = {
+        nom: data.nom || '',
+        prenom: '',
+        specialite: data.specialite || '',
+        bio: '',
+        image: data.portrait || '',
+        published: true
+      };
+
+      const existing = await prisma.expert.findFirst({
+        where: { nom: data.nom, specialite: data.specialite }
+      });
+      if (existing) {
+        await prisma.expert.update({ where: { id: existing.id }, data: fields });
+      } else {
+        await prisma.expert.create({ data: fields });
+      }
       count++;
     } catch (error) {
       console.error(`  ❌ Error migrating ${file}:`, error);
@@ -281,8 +320,8 @@ async function migrateExperts() {
 
 async function migratePublications() {
   console.log('📄 Migrating Publications...');
-  const publicationsDir = path.join(__dirname, '../../content/publications');
-  
+  const publicationsDir = path.join(CONTENT_DIR, 'publications');
+
   if (!fs.existsSync(publicationsDir)) {
     console.log('  ⚠️  Publications directory not found, skipping...');
     return;
@@ -294,16 +333,20 @@ async function migratePublications() {
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(publicationsDir, file), 'utf-8'));
-      
-      await prisma.publication.create({
-        data: {
-          titre: data.titre,
-          slug: data.slug,
-          description: data.description,
-          fichier: data.fichier,
-          date: data.date ? new Date(data.date) : new Date(),
-          published: data.published || false
-        }
+
+      const fields = {
+        titre: data.titre,
+        slug: data.slug,
+        description: data.description || '',
+        fichier: data.fichier || '',
+        date: data.date ? new Date(data.date) : new Date(),
+        published: data.published ?? true
+      };
+
+      await prisma.publication.upsert({
+        where: { slug: data.slug },
+        update: fields,
+        create: fields
       });
       count++;
     } catch (error) {
@@ -316,8 +359,8 @@ async function migratePublications() {
 
 async function migrateThematiques() {
   console.log('🏷️  Migrating Thematiques...');
-  const thematiquesDir = path.join(__dirname, '../../content/thematiques');
-  
+  const thematiquesDir = path.join(CONTENT_DIR, 'thematiques');
+
   if (!fs.existsSync(thematiquesDir)) {
     console.log('  ⚠️  Thematiques directory not found, skipping...');
     return;
@@ -329,15 +372,20 @@ async function migrateThematiques() {
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(thematiquesDir, file), 'utf-8'));
-      
-      await prisma.thematique.create({
-        data: {
-          nom: data.titre || '',
-          slug: data.itemId,
-          description: data.description || '',
-          published: true
-        }
-      }).catch(() => {});
+
+      // Thematique.slug is unique in the schema but the source JSON has no
+      // slug field, only itemId (e.g. "th01") — used as the slug value.
+      const fields = {
+        nom: data.titre || '',
+        description: data.description || '',
+        published: true
+      };
+
+      await prisma.thematique.upsert({
+        where: { slug: data.itemId },
+        update: fields,
+        create: { ...fields, slug: data.itemId }
+      });
       count++;
     } catch (error) {
       console.error(`  ❌ Error migrating ${file}:`, error);
