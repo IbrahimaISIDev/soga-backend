@@ -83,6 +83,7 @@ async function migrateArticles() {
         slug: data.slug,
         resume: data.extrait || '',
         contenu: Array.isArray(data.contenu) ? data.contenu.join('\n\n') : data.contenu || '',
+        categorie: data.categorie || '',
         image: data.image || '',
         date: data.date ? new Date(data.date) : new Date(),
         published: true

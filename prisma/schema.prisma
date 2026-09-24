@@ -46,6 +46,7 @@ model Article {
   slug        String   @unique
   resume      String?
   contenu     String
+  categorie   String?
   image       String?
   date        DateTime @default(now())
   published   Boolean  @default(false)
