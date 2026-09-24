@@ -7,10 +7,10 @@ const router = Router();
 
 const expertSchema = z.object({
   nom: z.string().min(1).max(200),
-  prenom: z.string().min(1).max(200),
+  prenom: z.string().optional(),
   specialite: z.string().optional(),
   bio: z.string().optional(),
-  image: z.string().url().optional(),
+  image: z.string().optional(),
   published: z.boolean().optional()
 });
 
@@ -43,7 +43,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     const data = expertSchema.parse(req.body);
-    const expert = await prisma.expert.create({ data });
+    const expert = await prisma.expert.create({ data: { ...data, prenom: data.prenom ?? '' } });
     res.status(201).json({ success: true, data: expert });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ success: false, error: 'Validation error', details: error.issues });

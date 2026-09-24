@@ -7,9 +7,9 @@ const router = Router();
 
 const partenaireSchema = z.object({
   nom: z.string().min(1).max(200),
-  logo: z.string().url().optional(),
+  logo: z.string().optional(),
   description: z.string().optional(),
-  siteWeb: z.string().url().optional(),
+  siteWeb: z.string().optional(),
   published: z.boolean().optional()
 });
 

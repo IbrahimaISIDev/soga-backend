@@ -7,12 +7,12 @@ const router = Router();
 
 const equipeSchema = z.object({
   nom: z.string().min(1).max(200),
-  prenom: z.string().min(1).max(200),
+  prenom: z.string().optional(),
   role: z.string().optional(),
   bio: z.string().optional(),
-  email: z.string().email().optional(),
-  image: z.string().url().optional(),
-  linkedin: z.string().url().optional(),
+  email: z.string().optional(),
+  image: z.string().optional(),
+  linkedin: z.string().optional(),
   published: z.boolean().optional()
 });
 
@@ -45,7 +45,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     const data = equipeSchema.parse(req.body);
-    const membre = await prisma.equipe.create({ data });
+    const membre = await prisma.equipe.create({ data: { ...data, prenom: data.prenom ?? '' } });
     res.status(201).json({ success: true, data: membre });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ success: false, error: 'Validation error', details: error.issues });

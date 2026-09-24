@@ -10,7 +10,7 @@ const articleSchema = z.object({
   slug: z.string().min(1).max(200).regex(/^[a-z0-9-]+$/),
   resume: z.string().optional(),
   contenu: z.string(),
-  image: z.string().url().optional(),
+  image: z.string().optional(),
   date: z.string().optional(),
   published: z.boolean().optional()
 });

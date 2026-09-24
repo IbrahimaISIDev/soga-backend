@@ -9,7 +9,7 @@ const publicationSchema = z.object({
   titre: z.string().min(1).max(200),
   slug: z.string().min(1).max(200).regex(/^[a-z0-9-]+$/),
   description: z.string().optional(),
-  fichier: z.string().url().optional(),
+  fichier: z.string().optional(),
   date: z.string().optional(),
   published: z.boolean().optional()
 });

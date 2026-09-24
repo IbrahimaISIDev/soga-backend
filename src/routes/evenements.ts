@@ -11,7 +11,7 @@ const evenementSchema = z.object({
   description: z.string().optional(),
   date: z.string(),
   lieu: z.string().optional(),
-  image: z.string().url().optional(),
+  image: z.string().optional(),
   published: z.boolean().optional()
 });
 

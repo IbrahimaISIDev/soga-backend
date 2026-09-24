@@ -10,13 +10,13 @@ const institutionSchema = z.object({
   slogan: z.string().optional(),
   description: z.string().optional(),
   adresse: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.string().optional(),
   telephone: z.string().optional(),
-  logo: z.string().url().optional(),
-  imageHero: z.string().url().optional(),
-  facebook: z.string().url().optional(),
-  linkedin: z.string().url().optional(),
-  twitter: z.string().url().optional()
+  logo: z.string().optional(),
+  imageHero: z.string().optional(),
+  facebook: z.string().optional(),
+  linkedin: z.string().optional(),
+  twitter: z.string().optional()
 });
 
 // GET /api/institution
