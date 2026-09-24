@@ -11,19 +11,30 @@ datasource db {
 }
 
 model Formation {
-  id          String   @id @default(cuid())
-  titre       String
-  slug        String   @unique
-  codeFiliere String
-  pole        String
-  niveau      String
-  rythme      String
-  duree       String
-  description String?
-  image       String?
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  titre               String
+  slug                String   @unique
+  codeFiliere         String
+  pole                String
+  niveau              String
+  rythme              String
+  duree               String
+  description         String?
+  image               String?
+  published           Boolean  @default(false)
+  rentree             String?
+  placesLimitees      Boolean  @default(false)
+  capacite            Int?
+  brochureUrl         String?
+  objectifs           String?
+  conditionsAdmission String?
+  publicConcerne      String?
+  debouches           String[] @default([])
+  /// Array of { numero: number, titre: string, ues: string[] } — no formation
+  /// populates this yet, kept as Json rather than a relation until it does.
+  semestres           Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@index([slug])
   @@index([published])

@@ -4,10 +4,16 @@ import * as path from 'path';
 
 const prisma = new PrismaClient();
 
+// The frontend/backend repos are no longer a single monorepo checkout, so the
+// content/ directory's location relative to this script isn't fixed — override
+// with CONTENT_DIR when the two repos aren't checked out as siblings.
+const CONTENT_DIR =
+  process.env.CONTENT_DIR || path.join(__dirname, '../../frontend/content');
+
 async function migrateFormations() {
   console.log('📚 Migrating Formations...');
-  const formationsDir = path.join(__dirname, '../../content/formations');
-  
+  const formationsDir = path.join(CONTENT_DIR, 'formations');
+
   if (!fs.existsSync(formationsDir)) {
     console.log('  ⚠️  Formations directory not found, skipping...');
     return;
@@ -19,22 +25,33 @@ async function migrateFormations() {
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(formationsDir, file), 'utf-8'));
-      
+
+      const fields = {
+        titre: data.titre,
+        slug: data.slug,
+        codeFiliere: data.code || '',
+        pole: data.pole || '',
+        niveau: data.niveau || '',
+        rythme: data.mode || '',
+        duree: data.duree || '',
+        description: data.description || '',
+        image: data.image || '',
+        published: true,
+        rentree: data.rentree || null,
+        placesLimitees: data.placesLimitees || false,
+        capacite: data.capacite ?? null,
+        brochureUrl: data.brochureUrl || null,
+        objectifs: data.objectifs || '',
+        conditionsAdmission: data.conditionsAdmission || '',
+        publicConcerne: data.publicConcerne || '',
+        debouches: data.debouches || [],
+        semestres: data.semestres && data.semestres.length > 0 ? data.semestres : null
+      };
+
       await prisma.formation.upsert({
         where: { slug: data.slug },
-        update: {},
-        create: {
-          titre: data.titre,
-          slug: data.slug,
-          codeFiliere: data.code || '',
-          pole: data.pole || '',
-          niveau: data.niveau || '',
-          rythme: data.mode || '',
-          duree: data.duree || '',
-          description: data.description || '',
-          image: data.image || '',
-          published: true
-        }
+        update: fields,
+        create: fields
       });
       count++;
     } catch (error) {

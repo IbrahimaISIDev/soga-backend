@@ -9,13 +9,30 @@ const formationSchema = z.object({
   titre: z.string().min(1).max(200),
   slug: z.string().min(1).max(200).regex(/^[a-z0-9-]+$/),
   codeFiliere: z.string().min(1).max(50),
-  pole: z.enum(['technique', 'management', 'communication']),
-  niveau: z.enum(['BTS', 'Licence', 'Master']),
-  rythme: z.enum(['Temps plein', 'Temps partiel', 'Alternance']),
+  pole: z.string().min(1).max(50),
+  niveau: z.string().min(1).max(50),
+  rythme: z.string().min(1).max(50),
   duree: z.string().max(50),
   description: z.string().optional(),
-  image: z.string().url().optional(),
-  published: z.boolean().optional()
+  image: z.string().optional(),
+  published: z.boolean().optional(),
+  rentree: z.string().optional(),
+  placesLimitees: z.boolean().optional(),
+  capacite: z.number().int().positive().optional(),
+  brochureUrl: z.string().optional(),
+  objectifs: z.string().optional(),
+  conditionsAdmission: z.string().optional(),
+  publicConcerne: z.string().optional(),
+  debouches: z.array(z.string()).optional(),
+  semestres: z
+    .array(
+      z.object({
+        numero: z.number(),
+        titre: z.string(),
+        ues: z.array(z.string())
+      })
+    )
+    .optional()
 });
 
 // GET /api/formations
