@@ -32,6 +32,3 @@ Thumbs.db
 
 # Testing
 coverage/
-
-# Prisma
-prisma/migrations/

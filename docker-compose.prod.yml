@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - soga_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+    # Pas de "ports:" : Postgres n'est joignable que par le conteneur "api"
+    # de ce compose, jamais depuis l'extérieur de la machine.
+
+  api:
+    build:
+      context: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.production
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+    volumes:
+      - soga_uploads:/app/uploads
+    networks:
+      internal:
+      edge:
+        aliases:
+          - soga-api
+    # Pas de "ports:" : joignable uniquement via le réseau "edge" partagé,
+    # sur lequel le Caddy partagé (caddy-caddy-1) fait reverse_proxy vers
+    # soga-api:3000 — voir infra/caddy/sites/soga.caddy sur le VPS.
+
+networks:
+  internal:
+  edge:
+    # Réseau Docker partagé sur lequel tourne déjà caddy-caddy-1.
+    # Créé en dehors de ce compose — voir ~/infra sur le VPS.
+    external: true
+
+volumes:
+  soga_pgdata:
+  soga_uploads:
