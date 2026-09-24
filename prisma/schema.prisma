@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Formation {
+  id          String   @id @default(cuid())
+  titre       String
+  slug        String   @unique
+  codeFiliere String
+  pole        String
+  niveau      String
+  rythme      String
+  duree       String
+  description String?
+  image       String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([published])
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  titre       String
+  slug        String   @unique
+  resume      String?
+  contenu     String
+  image       String?
+  date        DateTime @default(now())
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([published])
+  @@index([date])
+}
+
+model Evenement {
+  id          String   @id @default(cuid())
+  titre       String
+  slug        String   @unique
+  description String?
+  date        DateTime
+  lieu        String?
+  image       String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([published])
+  @@index([date])
+}
+
+model Partenaire {
+  id          String   @id @default(cuid())
+  nom         String
+  logo        String?
+  description String?
+  siteWeb     String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+}
+
+model Temoignage {
+  id          String   @id @default(cuid())
+  nom         String
+  role        String?
+  contenu     String
+  image       String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+}
+
+model Equipe {
+  id          String   @id @default(cuid())
+  nom         String
+  prenom      String
+  role        String?
+  bio         String?
+  email       String?
+  image       String?
+  linkedin    String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+}
+
+model Expert {
+  id          String   @id @default(cuid())
+  nom         String
+  prenom      String
+  specialite  String?
+  bio         String?
+  image       String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+}
+
+model Publication {
+  id          String   @id @default(cuid())
+  titre       String
+  slug        String   @unique
+  description String?
+  fichier     String?
+  date        DateTime @default(now())
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([published])
+}
+
+model Thematique {
+  id          String   @id @default(cuid())
+  nom         String
+  slug        String   @unique
+  description String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([published])
+}
+
+model Institution {
+  id          String   @id @default(cuid())
+  nom         String
+  slogan      String?
+  description String?
+  adresse     String?
+  email       String?
+  telephone   String?
+  logo        String?
+  imageHero   String?
+  facebook    String?
+  linkedin    String?
+  twitter     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  nom       String?
+  role      String   @default("editor")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
