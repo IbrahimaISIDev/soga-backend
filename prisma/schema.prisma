@@ -177,20 +177,39 @@ model Thematique {
 }
 
 model Institution {
-  id          String   @id @default(cuid())
-  nom         String
-  slogan      String?
-  description String?
-  adresse     String?
-  email       String?
-  telephone   String?
-  logo        String?
-  imageHero   String?
-  facebook    String?
-  linkedin    String?
-  twitter     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  nom          String
+  sigle        String?
+  tagline      String?
+  presentation String?
+  historique   String?
+  adresse      String?
+  email        String?
+  telephone    String?
+  horaires     String?
+  logo         String?
+  imageHero    String?
+  facebook     String?
+  linkedin     String?
+  instagram    String?
+  youtube      String?
+  twitter      String?
+  /// Array of { ville: string, adresse: string }
+  campuses     Json?
+  mission      String?
+  vision       String?
+  /// Array of { titre: string, sousTitre: string, description: string }
+  valeurs      Json?
+  /// Array of { valeur: string, libelle: string }
+  chiffres     Json?
+  /// { nom, titre, qualifications, citation, biographie: string[], portrait }
+  fondatrice   Json?
+  /// Array of { label: string, niveau: number, accent: boolean }
+  organigramme Json?
+  /// { description, infrastructures: [{titre,detail,enPlanification,photo}], photos: string[] }
+  campusInfo   Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model User {

@@ -415,15 +415,15 @@ async function migrateThematiques() {
 
 async function migrateInstitution() {
   console.log('🏛️  Migrating Institution...');
-  const institutionDir = path.join(__dirname, '../../content/institution');
-  
+  const institutionDir = path.join(CONTENT_DIR, 'institution');
+
   if (!fs.existsSync(institutionDir)) {
     console.log('  ⚠️  Institution directory not found, skipping...');
     return;
   }
 
   const files = fs.readdirSync(institutionDir);
-  
+
   if (files.length === 0) {
     console.log('  ⚠️  No institution files found, skipping...');
     return;
@@ -431,22 +431,41 @@ async function migrateInstitution() {
 
   try {
     const data = JSON.parse(fs.readFileSync(path.join(institutionDir, files[0]), 'utf-8'));
-    
-    await prisma.institution.create({
-      data: {
-        nom: data.nom,
-        slogan: data.slogan,
-        description: data.description,
-        adresse: data.adresse,
-        email: data.email,
-        telephone: data.telephone,
-        logo: data.logo,
-        imageHero: data.imageHero,
-        facebook: data.facebook,
-        linkedin: data.linkedin,
-        twitter: data.twitter
-      }
-    });
+
+    const fields = {
+      nom: data.nom,
+      sigle: data.sigle || '',
+      tagline: data.tagline || '',
+      presentation: data.presentation || '',
+      historique: data.historique || '',
+      adresse: data.adresse || '',
+      email: data.email || '',
+      telephone: data.telephone || '',
+      horaires: data.horaires || '',
+      facebook: data.reseauxSociaux?.facebook || '',
+      linkedin: data.reseauxSociaux?.linkedin || '',
+      instagram: data.reseauxSociaux?.instagram || '',
+      youtube: data.reseauxSociaux?.youtube || '',
+      twitter: data.reseauxSociaux?.twitter || '',
+      campuses: data.campuses || [],
+      mission: data.mission || '',
+      vision: data.vision || '',
+      valeurs: data.valeurs || [],
+      chiffres: data.chiffres || [],
+      fondatrice: data.fondatrice || null,
+      organigramme: data.organigramme || [],
+      campusInfo: data.campus || null
+    };
+
+    // Institution is a singleton — this script may run more than once,
+    // so update the existing row (matching the route's own logic) rather
+    // than blindly create() a second one.
+    const existing = await prisma.institution.findFirst({ orderBy: { createdAt: 'asc' } });
+    if (existing) {
+      await prisma.institution.update({ where: { id: existing.id }, data: fields });
+    } else {
+      await prisma.institution.create({ data: fields });
+    }
     console.log('  ✅ Migrated institution');
   } catch (error) {
     console.error('  ❌ Error migrating institution:', error);
